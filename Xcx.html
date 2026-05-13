@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Hub - Full Integrated</title>
+    
+    <!-- Library Animasi & Ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        :root {
+            --bg-music: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --bg-life: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            --bg-cat: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            --glass: rgba(255, 255, 255, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body {
+            background: #0a0a0a;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        /* Bingkai Smartphone */
+        .phone-container {
+            width: 360px;
+            height: 740px;
+            background: #000;
+            border-radius: 45px;
+            border: 10px solid #222;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.9);
+        }
+
+        .main-slider {
+            display: flex;
+            width: 300%;
+            height: 100%;
+            transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1);
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            padding: 40px 25px;
+            position: relative;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .nav-trigger {
+            width: 50px; height: 50px;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; transition: 0.3s;
+        }
+
+        /* --- LAYAR 1: MUSIC --- */
+        .music-screen { background: var(--bg-music); }
+        
+        .album-art {
+            width: 220px; height: 220px;
+            margin: 20px auto;
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+            border: 8px solid rgba(255,255,255,0.2);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            transition: 0.5s;
+        }
+
+        .playing .album-art { animation: spin 10s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .progress-container {
+            width: 100%; height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            margin: 20px 0;
+            cursor: pointer;
+        }
+        .progress { width: 0%; height: 100%; background: #fff; border-radius: 10px; }
+
+        .playlist { max-height: 200px; overflow-y: auto; }
+        .track {
+            background: var(--glass);
+            padding: 12px; border-radius: 12px;
+            margin-bottom: 8px; display: flex; justify-content: space-between;
+            cursor: pointer; font-size: 0.85rem;
+        }
+        .track.active { background: rgba(255,255,255,0.4); border: 1px solid #fff; }
+
+        /* --- LAYAR 2: DAILY LIFE --- */
+        .life-screen { background: var(--bg-life); }
+        .task-card {
+            background: white; color: #333;
+            padding: 18px; border-radius: 20px;
+            margin-bottom: 12px; display: flex; align-items: center; gap: 15px;
+        }
+
+        /* --- LAYAR 3: CAT ROUTINE --- */
+        .cat-screen { background: var(--bg-cat); color: #444; }
+        .routine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .routine-item {
+            background: rgba(255,255,255,0.6);
+            padding: 20px; border-radius: 20px;
+            text-align: center; cursor: pointer;
+            transition: 0.2s; position: relative;
+            min-height: 110px; display: flex; flex-direction: column; justify-content: center;
+        }
+        .routine-item:active { transform: scale(0.95); }
+        .routine-item i { font-size: 1.8rem; margin-bottom: 8px; color: #ff4757; }
+        .time-label {
+            font-size: 0.75rem; color: #ff4757; font-weight: 600;
+            height: 0; overflow: hidden; transition: 0.3s;
+        }
+        .time-label.show { height: 20px; margin-top: 5px; }
+
+    </style>
+</head>
+<body>
+
+<div class="phone-container">
+    <div class="main-slider" id="mainSlider">
+        
+        <!-- MUSIK (Screen 0) -->
+        <section class="screen music-screen" id="musicSection">
+            <div class="header">
+                <div class="nav-trigger" onclick="changeSlide(1)">
+                    <i class="fas fa-music"></i>
+                </div>
+                <span>Music Hub</span>
+                <i class="fas fa-heart"></i>
+            </div>
+            
+            <div class="album-art" id="albumArt"></div>
+            <div style="text-align: center;">
+                <h2 id="songTitle">Pilih Lagu</h2>
+                <p id="songArtist" style="font-size: 0.8rem; opacity: 0.7;">Artis</p>
+            </div>
+
+            <div class="progress-container" onclick="seek(event)">
+                <div class="progress" id="progressBar"></div>
+            </div>
+
+            <div class="playlist" id="playlist"></div>
+        </section>
+
+        <!-- DAILY LIFE (Screen 1) -->
+        <section class="screen life-screen">
+            <div class="header">
+                <div class="nav-trigger" onclick="changeSlide(2)">
+                    <i class="fas fa-user"></i>
+                </div>
+                <span>Daily Schedule</span>
+            </div>
+            
+            <div class="task-card animate__animated animate__fadeInRight">
+                <i class="fas fa-bed" style="color: #6a11cb;"></i>
+                <div><b>06:00</b><br>Bangun tidur</div>
+            </div>
+            <div class="task-card animate__animated animate__fadeInRight" style="animation-delay: 0.1s">
+                <i class="fas fa-briefcase" style="color: #6a11cb;"></i>
+                <div><b>07.30</b><br>Berangkat kerja</div>
+            </div>
+            <div class="task-card animate__animated animate__fadeInRight" style="animation-delay: 0.2s">
+                <i class="fas fa-utensils" style="color: #6a11cb;"></i>
+                <div><b>17:00</b><br>Makan dan Mandi</div>
+            </div>
+        </section>
+
+        <!-- CAT ROUTINE (Screen 2) -->
+        <section class="screen cat-screen">
+            <div class="header">
+                <div class="nav-trigger" onclick="changeSlide(0)">
+                    <i class="fas fa-bed"></i>
+                </div>
+                <span id="catHeader">Cat Hub</span>
+            </div>
+
+            <div class="routine-grid">
+                <div class="routine-item" onclick="showCatTime('makan', '07:00 & 19:00')">
+                    <i class="fas fa-bowl-food"></i><b>Makan</b>
+                    <div id="makan-label" class="time-label"></div>
+                </div>
+                <div class="routine-item" onclick="showCatTime('snack', '12:00 PM')">
+                    <i class="fas fa-fish"></i><b>Snack</b>
+                    <div id="snack-label" class="time-label"></div>
+                </div>
+                <div class="routine-item" onclick="showCatTime('main', '16:00 PM')">
+                    <i class="fas fa-baseball-ball"></i><b>Main</b>
+                    <div id="main-label" class="time-label"></div>
+                </div>
+                <div class="routine-item" onclick="showCatTime('tidur', '21:00 PM')">
+                    <i class="fas fa-moon"></i><b>Tidur</b>
+                    <div id="tidur-label" class="time-label"></div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 40px;">
+                <i class="fas fa-cat fa-5x animate__animated animate__bounce infinite" style="color: #ff4757;"></i>
+            </div>
+        </section>
+
+    </div>
+</div>
+
+<audio id="audioPlayer"></audio>
+
+<script>
+    // DATA LAGU
+    const songData = [
+        { title: "My love", artist: "Westlife", img: "Westlife.jpg", src: "My love.mp3" },
+        { title: "Best part", artist: "Daniel caesar", img: "Bestpart.jpg", src: "Bestpart2.mp3" },
+        { title: "chrisye", artist: "Untukku", img: "Crisye.jpg", src: "Crisye.mp3" }
+    ];
+
+    const audio = document.getElementById('audioPlayer');
+    const albumArt = document.getElementById('albumArt');
+    const playlist = document.getElementById('playlist');
+
+    // Inisialisasi Musik
+    albumArt.style.backgroundImage = `url('${songData[0].img}')`;
+    songData.forEach((song, i) => {
+        const div = document.createElement('div');
+        div.className = 'track';
+        div.innerHTML = `<span>${i+1}. ${song.title}</span> <i class="fas fa-play"></i>`;
+        div.onclick = () => {
+            document.querySelectorAll('.track').forEach(t => t.classList.remove('active'));
+            div.classList.add('active');
+            document.getElementById('songTitle').innerText = song.title;
+            document.getElementById('songArtist').innerText = song.artist;
+            albumArt.style.backgroundImage = `url('${song.img}')`;
+            audio.src = song.src;
+            audio.play();
+            document.getElementById('musicSection').classList.add('playing');
+        };
+        playlist.appendChild(div);
+    });
+
+    audio.ontimeupdate = () => {
+        document.getElementById('progressBar').style.width = (audio.currentTime / audio.duration) * 100 + "%";
+    };
+
+    function seek(e) {
+        audio.currentTime = (e.offsetX / e.currentTarget.clientWidth) * audio.duration;
+    }
+
+    // NAVIGASI
+    function changeSlide(idx) {
+        document.getElementById('mainSlider').style.transform = `translateX(-${(idx * 100) / 3}%)`;
+    }
+
+    // INTERAKSI KUCING (KHUSUS REQUEST LO)
+    function showCatTime(id, time) {
+        const label = document.getElementById(id + '-label');
+        const header = document.getElementById('catHeader');
+        
+        // Tampilkan jam di dalam kotak
+        label.innerText = "Jam " + time;
+        label.classList.add('show');
+        header.innerText = "Sesi " + id.toUpperCase() + "!";
+
+        // Reset setelah 3 detik
+        setTimeout(() => {
+            label.classList.remove('show');
+            header.innerText = "Cat Hub";
+        }, 3000);
+    }
+</script>
+
+</body>
+</html>
